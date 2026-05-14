@@ -10,24 +10,9 @@ def generate_learning_materials(pdf_path: str):
     uploaded_file = client.files.upload(file=pdf_path)
     
     prompt = """
-    You are an expert tutor. I have uploaded a PDF document containing notes.
-    Analyze the document and generate a structured JSON response containing learning materials designed for quick exam cramming.
-    Extract the main topics, and for each topic, provide:
-    1. A short, summarized set of notes (key takeaways).
-    2. Any important formulas, equations, or rules mentioned.
-    3. A few practice questions (with answers) to test knowledge.
-
-    Return valid JSON conforming exactly to this structure:
-    {
-      "topics": [
-        {
-          "title": "Topic Name",
-          "notes": ["Point 1", "Point 2"],
-          "formulas": [{"name": "Formula Name", "equation": "E=mc^2", "description": "Energy-mass equivalence"}],
-          "questions": [{"question": "What is...", "answer": "It is..."}]
-        }
-      ]
-    }
+      generate a friendly UI with all the notes, formulas, and practice questions.
+      it should be easy to navigate and understand.
+      use markdown for formatting.
     """
     
     response = client.models.generate_content(
