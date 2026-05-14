@@ -1,5 +1,14 @@
 import React, { useState, useRef } from 'react';
 
+// API base URL is set via the VITE_API_URL environment variable.
+// For local dev: set VITE_API_URL=http://localhost:8000 in frontend/.env
+// For production: set VITE_API_URL=https://your-backend.com in your hosting config
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// 20 MB client-side guard — mirrors the server-side limit
+const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 const UploadSection = ({ onUploadSuccess }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState(null);
@@ -20,7 +29,6 @@ const UploadSection = ({ onUploadSuccess }) => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelection(e.dataTransfer.files[0]);
     }
@@ -34,11 +42,23 @@ const UploadSection = ({ onUploadSuccess }) => {
 
   const handleFileSelection = (selectedFile) => {
     setError('');
+
     if (selectedFile.type !== 'application/pdf') {
       setError('Please upload a PDF file.');
       setFile(null);
       return;
     }
+
+    // Client-side size check — gives instant feedback before the server rejects it
+    if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
+      const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(1);
+      setError(
+        `File is too large (${sizeMB} MB). Maximum allowed size is ${MAX_FILE_SIZE_MB} MB.`
+      );
+      setFile(null);
+      return;
+    }
+
     setFile(selectedFile);
   };
 
@@ -52,20 +72,26 @@ const UploadSection = ({ onUploadSuccess }) => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:8000/upload', {
+      const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'Upload failed');
+        let detail = 'Upload failed. Please try again.';
+        try {
+          const errData = await response.json();
+          detail = errData.detail || detail;
+        } catch {
+          // response body wasn't JSON — use generic message
+        }
+        throw new Error(detail);
       }
 
       const data = await response.json();
       onUploadSuccess(data);
     } catch (err) {
-      setError(err.message || 'An error occurred during upload.');
+      setError(err.message || 'An unexpected error occurred during upload.');
     } finally {
       setIsUploading(false);
     }
@@ -77,49 +103,89 @@ const UploadSection = ({ onUploadSuccess }) => {
         <h2 style={{ marginBottom: '1rem' }}>Upload Your Notes</h2>
         <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>
           Upload your PDF notes and let AI generate study materials for your exam.
+          <br />
+          <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+            Maximum file size: {MAX_FILE_SIZE_MB} MB &middot; PDF only
+          </span>
         </p>
 
-        <div 
+        <div
           className={`dropzone ${isDragging ? 'active' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current.click()}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload PDF file"
+          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current.click()}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+            />
           </svg>
-          
+
           {file ? (
             <div style={{ color: 'var(--success-color)', fontWeight: '600' }}>
-              Selected: {file.name}
+              ✓ {file.name}{' '}
+              <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.85rem' }}>
+                ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+              </span>
             </div>
           ) : (
             <div>
-              <span style={{ color: 'var(--accent-color)' }}>Click to upload</span> or drag and drop<br/>
+              <span style={{ color: 'var(--accent-color)' }}>Click to upload</span> or drag and
+              drop
+              <br />
               <span style={{ fontSize: '0.9rem', color: '#64748b' }}>PDF files only</span>
             </div>
           )}
-          
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
+
+          <input
+            type="file"
+            id="pdf-file-input"
+            ref={fileInputRef}
+            onChange={handleFileChange}
             accept="application/pdf"
-            style={{ display: 'none' }} 
+            style={{ display: 'none' }}
           />
         </div>
 
-        {error && <div style={{ color: '#ef4444', marginTop: '1rem' }}>{error}</div>}
+        {error && (
+          <div
+            role="alert"
+            style={{
+              color: '#ef4444',
+              marginTop: '1rem',
+              background: 'rgba(239, 68, 68, 0.08)',
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              fontSize: '0.9rem',
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         <div style={{ marginTop: '2rem' }}>
-          <button 
-            className="btn" 
-            onClick={uploadFile} 
+          <button
+            id="generate-btn"
+            className="btn"
+            onClick={uploadFile}
             disabled={!file || isUploading}
             style={{ width: '100%' }}
           >
-            {isUploading ? 'Generating Materials (this may take a minute)...' : 'Generate Study Materials'}
+            {isUploading ? 'Generating Materials — this may take a minute…' : 'Generate Study Materials'}
           </button>
         </div>
       </div>
