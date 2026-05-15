@@ -1,0 +1,39 @@
+name: Sync Backend to Hugging Face
+
+on:
+  push:
+    branches: [main]
+    # Only run the workflow if changes were made inside the backend/ folder
+    paths:
+      - 'backend/**'
+  # Allow manual triggering from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Fetch full history so subtree works correctly
+          fetch-depth: 0 
+          lfs: true
+      
+      - name: Push Subtree to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Set up git config (required for subtree operations)
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          # Add the HF remote using the API token for authentication
+          git remote add huggingface https://shivanshujha:$HF_TOKEN@huggingface.co/spaces/shivanshujha/friendlynotes-backend
+          
+          # Split the backend directory and force push it to Hugging Face
+          echo "Splitting backend folder..."
+          SPLIT_HASH=$(git subtree split --prefix backend main)
+          
+          echo "Pushing to Hugging Face..."
+          git push huggingface "$SPLIT_HASH:main" --force

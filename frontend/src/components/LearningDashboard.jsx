@@ -40,7 +40,7 @@ const LearningDashboard = ({ data }) => {
                     <li key={i}>{note}</li>
                   ))
                 ) : (
-                  <p style={{ color: '#94a3b8' }}>No specific notes for this topic.</p>
+                  <p style={{ color: 'var(--text-muted)' }}>No specific notes for this topic.</p>
                 )}
               </ul>
             )}
@@ -52,11 +52,11 @@ const LearningDashboard = ({ data }) => {
                     <div key={i} className="formula-card">
                       <h3>{formula.name}</h3>
                       <div className="formula-math">{formula.equation}</div>
-                      <p style={{ color: '#cbd5e1' }}>{formula.description}</p>
+                      <p style={{ color: 'var(--text-muted)' }}>{formula.description}</p>
                     </div>
                   ))
                 ) : (
-                  <p style={{ color: '#94a3b8' }}>No specific formulas for this topic.</p>
+                  <p style={{ color: 'var(--text-muted)' }}>No specific formulas for this topic.</p>
                 )}
               </div>
             )}
@@ -71,7 +71,7 @@ const LearningDashboard = ({ data }) => {
                     </div>
                   ))
                 ) : (
-                  <p style={{ color: '#94a3b8' }}>No practice questions available for this topic.</p>
+                  <p style={{ color: 'var(--text-muted)' }}>No practice questions available for this topic.</p>
                 )}
               </div>
             )}

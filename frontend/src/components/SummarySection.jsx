@@ -89,14 +89,14 @@ const SummarySection = () => {
               Summarize Another PDF
             </button>
           </div>
-          <div className="markdown-body" style={{ color: '#f8fafc', lineHeight: '1.7' }}>
+          <div className="markdown-body" style={{ color: 'var(--text-color)', lineHeight: '1.7' }}>
             <ReactMarkdown>{summary}</ReactMarkdown>
           </div>
         </div>
       ) : (
         <div className="glass-panel">
           <h2 style={{ marginBottom: '1rem' }}>Summarize Your Notes</h2>
-          <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
             Upload a PDF to instantly generate a comprehensive, easy-to-read text summary using Gemini AI.
           </p>
 
@@ -118,7 +118,7 @@ const SummarySection = () => {
             ) : (
               <div>
                 <span style={{ color: 'var(--accent-color)' }}>Click to upload</span> or drag and drop<br/>
-                <span style={{ fontSize: '0.9rem', color: '#64748b' }}>PDF files only</span>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>PDF files only</span>
               </div>
             )}
             

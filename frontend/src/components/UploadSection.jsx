@@ -101,10 +101,10 @@ const UploadSection = ({ onUploadSuccess }) => {
     <div className="upload-container">
       <div className="glass-panel">
         <h2 style={{ marginBottom: '1rem' }}>Upload Your Notes</h2>
-        <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
           Upload your PDF notes and let AI generate study materials for your exam.
           <br />
-          <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             Maximum file size: {MAX_FILE_SIZE_MB} MB &middot; PDF only
           </span>
         </p>
@@ -137,7 +137,7 @@ const UploadSection = ({ onUploadSuccess }) => {
           {file ? (
             <div style={{ color: 'var(--success-color)', fontWeight: '600' }}>
               ✓ {file.name}{' '}
-              <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.85rem' }}>
+              <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 ({(file.size / (1024 * 1024)).toFixed(2)} MB)
               </span>
             </div>
@@ -146,7 +146,7 @@ const UploadSection = ({ onUploadSuccess }) => {
               <span style={{ color: 'var(--accent-color)' }}>Click to upload</span> or drag and
               drop
               <br />
-              <span style={{ fontSize: '0.9rem', color: '#64748b' }}>PDF files only</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>PDF files only</span>
             </div>
           )}
 
